@@ -1,12 +1,28 @@
 # Production Validation Policies
 
-This section contains production-grade validation policies for :contentReference[oaicite:0]{index=0}.
+This section contains production-grade validation policies.
 
 These policies help enforce:
 - Kubernetes security best practices
 - workload compliance
 - DevSecOps standards
 - production reliability
+
+---
+
+# Directory Structure
+
+```text
+02-production-validation/
+├── require-non-root.md
+├── disallow-privileged.md
+├── require-resources.md
+├── require-probes.md
+├── restrict-registries.md
+├── disallow-hostpath.md
+├── require-labels.md
+└── rollout-strategy.md
+```
 
 ---
 
@@ -25,233 +41,6 @@ These policies help enforce:
 
 ---
 
-# 1. require-non-root
-
-## Goal
-
-Ensure containers do not run as the root user.
-
-## Why Important
-
-Running containers as root increases:
-- privilege escalation risks
-- container breakout risks
-- host compromise risks
-
-## Production Best Practice
-
-Use:
-
-```yaml
-securityContext:
-  runAsNonRoot: true
-```
-
----
-
-# 2. disallow-privileged
-
-## Goal
-
-Block privileged containers.
-
-## Why Important
-
-Privileged containers can:
-- access host devices
-- bypass namespace isolation
-- compromise cluster security
-
-## Production Recommendation
-
-Never allow:
-
-```yaml
-privileged: true
-```
-
-unless absolutely necessary.
-
----
-
-# 3. require-resources
-
-## Goal
-
-Require CPU and memory requests/limits.
-
-## Why Important
-
-Without resource limits:
-- noisy neighbor problems occur
-- scheduling becomes unreliable
-- nodes may become unstable
-
-## Production Best Practice
-
-Always define:
-
-```yaml
-resources:
-  requests:
-  limits:
-```
-
----
-
-# 4. require-probes
-
-## Goal
-
-Require:
-- liveness probes
-- readiness probes
-
-## Why Important
-
-Probes improve:
-- self-healing
-- traffic reliability
-- deployment safety
-
-## Production Best Practice
-
-Every production workload should define:
-- readinessProbe
-- livenessProbe
-
----
-
-# 5. restrict-registries
-
-## Goal
-
-Allow images only from trusted registries.
-
-## Example
-
-Allow only:
-- ECR
-- GCR
-- ACR
-- private registries
-
-## Why Important
-
-Prevents:
-- untrusted images
-- supply chain attacks
-- malicious public images
-
----
-
-# 6. disallow-hostpath
-
-## Goal
-
-Prevent use of `hostPath` volumes.
-
-## Why Important
-
-`hostPath` can expose:
-- host filesystem
-- Kubernetes node data
-- container runtime files
-
-This is considered high risk.
-
-## Production Recommendation
-
-Avoid `hostPath` whenever possible.
-
----
-
-# 7. require-labels
-
-## Goal
-
-Enforce mandatory labels.
-
-## Common Labels
-
-```yaml
-labels:
-  app:
-  environment:
-  team:
-  owner:
-```
-
-## Why Important
-
-Labels help with:
-- monitoring
-- governance
-- cost allocation
-- automation
-- observability
-
----
-
-# 8. rollout-strategy
-
-## Goal
-
-Safely introduce policies into production.
-
----
-
-# Recommended Rollout Pattern
-
-```text
-Audit
-  ↓
-Observe Violations
-  ↓
-Fix Workloads
-  ↓
-Gradual Namespace Rollout
-  ↓
-Enforce
-```
-
----
-
-# NEVER Start With Enforce
-
-Bad Approach:
-
-```yaml
-validationFailureAction: Enforce
-```
-
-on day one.
-
-This can:
-- break deployments
-- block CI/CD
-- cause outages
-
----
-
-# Recommended Approach
-
-Start with:
-
-```yaml
-validationFailureAction: Audit
-```
-
-Observe:
-- policy reports
-- violations
-- affected teams
-
-Then gradually move to:
-- Enforce
-
----
-
 # Important Production Lessons
 
 ## 1. Policies Can Break Production
@@ -267,7 +56,7 @@ before cluster-wide rollout.
 
 ## 2. GitOps Drift Can Happen
 
-Mutation policies can create drift with tools like :contentReference[oaicite:1]{index=1}.
+Mutation policies can create drift with tools like : Argocd.
 
 Example:
 - Git desired state differs from mutated cluster state.
