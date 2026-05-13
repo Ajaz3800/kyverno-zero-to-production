@@ -1,6 +1,6 @@
 # Kyverno Mutation & Generation Policies
 
-This section contains production-focused mutation and generation policy examples using :contentReference[oaicite:0]{index=0}.
+This section contains production-focused mutation and generation policy.
 
 Mutation policies automatically modify Kubernetes resources during admission.
 
@@ -18,6 +18,24 @@ These are extremely important for:
 
 ---
 
+# Directory Structure
+
+```text
+03-mutation/
+├── mutation-basics.md
+├── strategic-merge.md
+├── foreach.md
+├── auto-labels.md
+├── image-pull-policy.md
+├── security-context.md
+├── generate-rules.md
+├── network-policy-generation.md
+├── resourcequota-generation.md
+└── gitops-safe-mutation.md
+```
+
+---
+
 # Mutation vs Validation
 
 | Feature | Validation | Mutation |
@@ -26,283 +44,6 @@ These are extremely important for:
 | Automatically modifies resources | ❌ | ✅ |
 | Generates reports | ✅ | Limited |
 | Admission-time processing | ✅ | ✅ |
-
----
-
-# 1. mutation-basics.md
-
-## Goal
-
-Learn basic mutation concepts.
-
-## Mutation Use Cases
-
-- Add labels
-- Add annotations
-- Inject security settings
-- Set imagePullPolicy
-- Add tolerations
-- Add sidecars
-
----
-
-## Example
-
-```yaml
-mutate:
-  patchStrategicMerge:
-```
-
----
-
-# 2. strategic-merge.md
-
-## Goal
-
-Understand Strategic Merge Patch behavior.
-
-## Why Important
-
-Kyverno mutation commonly uses:
-
-```yaml
-patchStrategicMerge:
-```
-
-This safely merges:
-- labels
-- annotations
-- security settings
-- container fields
-
-without replacing the full object.
-
----
-
-## Example
-
-```yaml
-metadata:
-  labels:
-    +(environment): production
-```
-
----
-
-# 3. foreach.md
-
-## Goal
-
-Mutate or validate all containers dynamically.
-
-## Why Important
-
-Production Pods often contain:
-- multiple containers
-- initContainers
-- sidecars
-
-`foreach` helps process them safely.
-
----
-
-## Example
-
-```yaml
-foreach:
-  - list: "request.object.spec.containers[]"
-```
-
----
-
-# 4. auto-labels.md
-
-## Goal
-
-Automatically apply labels.
-
-## Common Labels
-
-```yaml
-environment:
-team:
-owner:
-cost-center:
-```
-
----
-
-## Why Important
-
-Labels help with:
-- observability
-- governance
-- cost allocation
-- automation
-- monitoring
-
----
-
-# 5. image-pull-policy.md
-
-## Goal
-
-Automatically enforce imagePullPolicy.
-
-## Example
-
-```yaml
-imagePullPolicy: Always
-```
-
----
-
-## Why Important
-
-Helps ensure:
-- latest images pulled
-- stale image prevention
-- deployment consistency
-
----
-
-# 6. security-context.md
-
-## Goal
-
-Automatically enforce secure container settings.
-
-## Common Security Settings
-
-```yaml
-runAsNonRoot: true
-readOnlyRootFilesystem: true
-allowPrivilegeEscalation: false
-```
-
----
-
-## Why Important
-
-Reduces:
-- privilege escalation
-- container breakout risks
-- insecure workloads
-
----
-
-# 7. generate-rules.md
-
-## Goal
-
-Automatically generate Kubernetes resources.
-
-## Common Generate Use Cases
-
-- NetworkPolicies
-- ResourceQuotas
-- LimitRanges
-- Secrets
-- ConfigMaps
-
----
-
-# Generate Flow
-
-```text
-Namespace Created
-      ↓
-Kyverno Generate Rule
-      ↓
-Security Resources Created Automatically
-```
-
----
-
-# 8. network-policy-generation.md
-
-## Goal
-
-Automatically create NetworkPolicies.
-
-## Why Important
-
-Prevents namespaces from:
-- running without network isolation
-- allowing unrestricted traffic
-
----
-
-## Production Benefit
-
-Every new namespace automatically gets:
-- default deny policies
-- baseline security
-
----
-
-# 9. resourcequota-generation.md
-
-## Goal
-
-Automatically create ResourceQuotas.
-
-## Why Important
-
-Prevents:
-- namespace resource exhaustion
-- noisy neighbor problems
-- uncontrolled CPU/memory usage
-
----
-
-## Example Resources
-
-```yaml
-ResourceQuota
-LimitRange
-```
-
----
-
-# 10. gitops-safe-mutation.md
-
-## Goal
-
-Understand GitOps-safe mutation strategies.
-
----
-
-# VERY Important Production Topic
-
-Mutation can conflict with tools like:
-
-- :contentReference[oaicite:1]{index=1}
-- FluxCD
-
-Because:
-- Git desired state
-- Cluster mutated state
-
-may differ.
-
-This creates:
-- drift detection issues
-- continuous reconciliation loops
-
----
-
-# Example Drift Scenario
-
-```text
-Git Manifest
-     ↓
-No Label Present
-     ↓
-Kyverno Adds Label
-     ↓
-ArgoCD Detects Drift
-```
 
 ---
 
