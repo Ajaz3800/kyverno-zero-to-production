@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-image-pull-policy
+
+spec:
+  rules:
+    - name: add-image-pull-policy
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{ element.name }}"
+                    imagePullPolicy: Always
