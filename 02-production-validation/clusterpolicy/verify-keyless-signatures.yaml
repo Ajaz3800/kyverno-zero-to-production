@@ -1,0 +1,28 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-keyless-signatures
+
+spec:
+  validationFailureAction: Audit
+  background: false
+
+  rules:
+    - name: verify-image
+
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      verifyImages:
+        - imageReferences:
+            - "harbor.example.com/*"
+
+          attestors:
+            - entries:
+                - keyless:
+                    subject: "https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO/.github/workflows/YOUR_WORKFLOW.yml@refs/heads/main"
+
+                    issuer: "https://token.actions.githubusercontent.com"

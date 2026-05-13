@@ -1,0 +1,37 @@
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: verify-image-signatures
+  namespace: production
+
+spec:
+  validationFailureAction: Audit
+  background: false
+
+  webhookTimeoutSeconds: 30
+
+  rules:
+    - name: verify-signatures
+
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      verifyImages:
+        - imageReferences:
+            - "harbor.example.com/*"
+
+          mutateDigest: false
+          required: true
+          verifyDigest: true
+
+          attestors:
+            - count: 1
+
+              entries:
+                - keys:
+                    secret:
+                      name: cosign-pub-key
+                      namespace: kyverno

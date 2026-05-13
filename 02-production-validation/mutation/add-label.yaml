@@ -1,0 +1,23 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-label
+
+spec:
+  rules:
+    - name: add-env-label
+
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+              namespaces:
+                - production
+
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              +(environment): production
